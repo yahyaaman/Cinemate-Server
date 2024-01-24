@@ -30,6 +30,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+
+  wishlist: [
+    {
+      type: Object,
+      // ref: "MovieWishlist",
+      required: true,
+    },
+  ],
 });
 
 const User = mongoose.model("User", userSchema);

@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import { sendTokenToClient } from "../utils/features.js";
+import mongoose from "mongoose";
 
 export const getAllUsers = async (req, res, next) => {
   let users;
@@ -155,4 +156,116 @@ export const changePassword = async (req, res, next) => {
   return res.status(202).json({
     message: "Password changed successfully",
   });
+};
+
+export const addToWishlist = async (req, res) => {
+  try {
+    const { name, movieID, movieDate, wishlistedDate, user } = req.body;
+
+    let existingUser;
+    try {
+      existingUser = await User.findById(user);
+    } catch (error) {
+      console.error("Error finding user:", error);
+      return res.status(500).json({ message: "Server Error" });
+    }
+
+    if (!existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Unable to find user with this ID" });
+    }
+
+    try {
+      const session = await mongoose.startSession();
+      session.startTransaction();
+      // await newWishlistedItem.save();
+
+      existingUser.wishlist.push({
+        name,
+        movieID,
+        movieDate,
+        wishlistedDate,
+        user,
+      });
+      await existingUser.save();
+      await session.commitTransaction();
+
+      return res.status(201).json(existingUser);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: error });
+    }
+  } catch (error) {
+    console.error("Error adding to wishlist:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const removeFromWishlist = async (req, res) => {
+  try {
+    const { movieID, user } = req.body;
+
+    let existingUser;
+    try {
+      existingUser = await User.findById(user);
+    } catch (error) {
+      console.error("Error finding user:", error);
+      return res.status(500).json({ message: "Server Error" });
+    }
+
+    if (!existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Unable to find user with this ID" });
+    }
+
+    try {
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      // Find the index of the item in the wishlist array
+      const indexToRemove = existingUser.wishlist.findIndex(
+        (item) => item.movieID === movieID
+      );
+
+      // If the item is found, remove it from the wishlist array
+      if (indexToRemove !== -1) {
+        existingUser.wishlist.splice(indexToRemove, 1);
+      } else {
+        return res.status(404).json({ message: "Item not found in wishlist" });
+      }
+
+      await existingUser.save();
+      await session.commitTransaction();
+
+      return res.status(200).json(existingUser);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: error });
+    }
+  } catch (error) {
+    console.error("Error removing from wishlist:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const getAUser = async (req, res) => {
+  const userID = req.params.id;
+  try {
+    const existingUser = await User.findById(userID);
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User does not exist",
+      });
+    }
+
+    return res.status(200).json({ existingUser });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
