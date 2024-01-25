@@ -205,7 +205,6 @@ export const addToWishlist = async (req, res) => {
 export const removeFromWishlist = async (req, res) => {
   try {
     const { movieID, user } = req.body;
-
     let existingUser;
     try {
       existingUser = await User.findById(user);
