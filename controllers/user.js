@@ -204,6 +204,97 @@ export const addToWishlist = async (req, res) => {
   }
 };
 
+export const addToTvWishlist = async (req, res) => {
+  try {
+    const { name, tvID, tvImg, tvDate, wishlistedDate, user } = req.body;
+
+    let existingUser;
+    try {
+      existingUser = await User.findById(user);
+    } catch (error) {
+      console.error("Error finding user:", error);
+      return res.status(500).json({ message: "Server Error" });
+    }
+
+    if (!existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Unable to find user with this ID" });
+    }
+
+    try {
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      existingUser.tvwishlist.push({
+        name,
+        tvID,
+        tvImg,
+        tvDate,
+        wishlistedDate,
+        user,
+      });
+      await existingUser.save();
+      await session.commitTransaction();
+
+      return res.status(201).json(existingUser);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: error });
+    }
+  } catch (error) {
+    console.error("Error adding to wishlist:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const removeFromTvWishlist = async (req, res) => {
+  try {
+    const { tvID, user } = req.body;
+    let existingUser;
+    try {
+      existingUser = await User.findById(user);
+    } catch (error) {
+      console.error("Error finding user:", error);
+      return res.status(500).json({ message: "Server Error" });
+    }
+
+    if (!existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Unable to find user with this ID" });
+    }
+
+    try {
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      // Find the index of the item in the wishlist array
+      const indexToRemove = existingUser.tvwishlist.findIndex(
+        (item) => item.tvID === tvID
+      );
+
+      // If the item is found, remove it from the wishlist array
+      if (indexToRemove !== -1) {
+        existingUser.tvwishlist.splice(indexToRemove, 1);
+      } else {
+        return res.status(404).json({ message: "Item not found in wishlist" });
+      }
+
+      await existingUser.save();
+      await session.commitTransaction();
+
+      return res.status(200).json(existingUser);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: error });
+    }
+  } catch (error) {
+    console.error("Error removing from wishlist:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 export const removeFromWishlist = async (req, res) => {
   try {
     const { movieID, user } = req.body;

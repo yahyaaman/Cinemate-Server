@@ -7,6 +7,8 @@ import {
   deleteUser,
   addToWishlist,
   removeFromWishlist,
+  addToTvWishlist,
+  removeFromTvWishlist,
   getAUser,
 } from "../controllers/user.js";
 import { isAuthenticated } from "../middlewares/auth.js";
@@ -19,6 +21,8 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.post("/addToWishlist", addToWishlist);
 router.post("/removeFromWishlist", removeFromWishlist);
+router.post("/addToTvWishlist", addToTvWishlist);
+router.post("/removeFromTvWishlist", removeFromTvWishlist);
 router.post("/change-password", isAuthenticated, changePassword);
 router.delete("/delete-user", isAuthenticated, deleteUser);
 
