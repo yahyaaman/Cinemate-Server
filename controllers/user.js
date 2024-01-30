@@ -160,7 +160,8 @@ export const changePassword = async (req, res, next) => {
 
 export const addToWishlist = async (req, res) => {
   try {
-    const { name, movieID, movieDate, wishlistedDate, user } = req.body;
+    const { name, movieID, movieImg, movieDate, wishlistedDate, user } =
+      req.body;
 
     let existingUser;
     try {
@@ -184,6 +185,7 @@ export const addToWishlist = async (req, res) => {
       existingUser.wishlist.push({
         name,
         movieID,
+        movieImg,
         movieDate,
         wishlistedDate,
         user,
