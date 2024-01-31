@@ -20,7 +20,8 @@ export const getAllUsers = async (req, res, next) => {
 };
 
 export const signup = async (req, res, next) => {
-  const { name, email, password, address, phone } = req.body;
+  const { email, name, password } = req.body;
+  console.log("test", req.body);
   let existingUser;
   try {
     existingUser = await User.findOne({ email });
@@ -38,12 +39,9 @@ export const signup = async (req, res, next) => {
 
   const hashedPassword = await bcrypt.hash(password, salt);
   const newUser = await User.create({
-    name,
     email,
+    name,
     password: hashedPassword,
-    salt,
-    address,
-    phone,
   });
 
   try {
@@ -51,7 +49,8 @@ export const signup = async (req, res, next) => {
   } catch (err) {
     return console.log(err);
   }
-  return res.status(201).json({ newUser });
+  const result = sendTokenToClient(newUser, "Signup Successful");
+  return res.status(201).json({ result, newUser });
 };
 
 export const login = async (req, res, next) => {
