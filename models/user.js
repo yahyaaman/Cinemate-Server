@@ -22,26 +22,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  address: {
-    type: String,
-    required: false,
-  },
-  phone: {
-    type: String,
-    required: false,
-  },
-
   wishlist: [
     {
       type: Object,
-      // ref: "MovieWishlist",
       required: true,
     },
   ],
   tvwishlist: [
     {
       type: Object,
-      // ref: "MovieWishlist",
       required: true,
     },
   ],
