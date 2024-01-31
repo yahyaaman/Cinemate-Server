@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import { sendTokenToClient } from "../utils/features.js";
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
 
 export const getAllUsers = async (req, res, next) => {
   let users;
@@ -358,5 +359,138 @@ export const getAUser = async (req, res) => {
     return res.status(500).json({
       message: "Internal server error",
     });
+  }
+};
+
+const generateRandomToken = (length) => {
+  const characters = "0123456789";
+  let token = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    token += characters[randomIndex];
+  }
+  return token;
+};
+
+export const generateResetToken = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    console.log(email);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const resetToken = generateRandomToken(5);
+
+    user.resetToken = resetToken;
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      service: "hotmail",
+      host: "smtp-mail.outlook.com",
+      secure: false,
+      port: 587,
+      auth: {
+        user: "yahyaaman@hotmail.com",
+        pass: "johncena3534",
+      },
+    });
+
+    const mailOptions = {
+      from: "yahyaaman@hotmail.com",
+      to: email,
+      subject: "Password Reset Token",
+      text: `Your password reset token is: ${resetToken}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal Server Error" });
+      } else {
+        console.log("Email sent: " + info.response);
+        return res
+          .status(200)
+          .json({ message: "Reset token sent successfully" });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  const { email, resetToken, password } = req.body;
+
+  console.log("Token Provided from body: ", resetToken);
+  console.log("Password: ", password);
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    console.log("Stored token of the user: ", user.email);
+
+    if (user.resetToken === resetToken) {
+      const newPassword = password;
+
+      const saltRounds = 10;
+      const salt = await bcrypt.genSalt(saltRounds);
+
+      user.password = await bcrypt.hash(newPassword, salt);
+
+      user.resetToken = null;
+
+      await user.save();
+
+      // Send an email with the new password
+      // const transporter = nodemailer.createTransport({
+      //   service: "hotmail",
+      //   host: "smtp-mail.outlook.com",
+      //   secure: false,
+      //   port: 587,
+      //   auth: {
+      //     user: "yahyaaman@hotmail.com", // Replace with your email
+      //     pass: "johncena3534", // Replace with your email password
+      //   },
+      // });
+
+      // const mailOptions = {
+      //   from: "yahyaaman@hotmail.com", // Replace with your email
+      //   to: email,
+      //   subject: "Your New Password",
+      //   text: `Your new password is: ${newPassword}`,
+      // };
+
+      // transporter.sendMail(mailOptions, (error, info) => {
+      //   if (error) {
+      //     console.error(error);
+      //     return res.status(500).json({ message: "Internal Server Error" });
+      //   } else {
+      //     console.log("Email sent: " + info.response);
+      //     return res
+      //       .status(200)
+      //       .json({ message: "New password sent successfully" });
+      //   }
+      // });
+      return res.status(200).json({ message: "Password successfully changed" });
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
