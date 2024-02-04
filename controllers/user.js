@@ -206,7 +206,8 @@ export const addToWishlist = async (req, res) => {
 
 export const addToTvWishlist = async (req, res) => {
   try {
-    const { name, tvID, tvImg, tvDate, wishlistedDate, user } = req.body;
+    const { name, tvID, tvImg, tvDate, user } = req.body;
+    const wishlistedDate = new Date();
 
     let existingUser;
     try {
