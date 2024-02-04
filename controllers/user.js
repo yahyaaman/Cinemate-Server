@@ -160,9 +160,9 @@ export const changePassword = async (req, res, next) => {
 
 export const addToWishlist = async (req, res) => {
   try {
-    const { name, movieID, movieImg, movieDate, wishlistedDate, user } =
-      req.body;
+    const { name, movieID, movieImg, movieDate, user } = req.body;
 
+    const wishlistedDate = new Date();
     let existingUser;
     try {
       existingUser = await User.findById(user);
