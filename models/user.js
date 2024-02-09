@@ -34,6 +34,13 @@ const userSchema = new mongoose.Schema({
       required: true,
     },
   ],
+  collections: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Collection",
+      required: true,
+    },
+  ],
   resetToken: {
     type: String,
     default: null,
