@@ -7,9 +7,6 @@ const collectionSchema = new mongoose.Schema({
     trim: true,
     unique: true,
   },
-  image: {
-    type: String,
-  },
   items: [
     {
       type: Object,
