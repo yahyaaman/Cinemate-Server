@@ -454,36 +454,6 @@ export const forgotPassword = async (req, res) => {
 
       await user.save();
 
-      // Send an email with the new password
-      // const transporter = nodemailer.createTransport({
-      //   service: "hotmail",
-      //   host: "smtp-mail.outlook.com",
-      //   secure: false,
-      //   port: 587,
-      //   auth: {
-      //     user: "yahyaaman@hotmail.com", // Replace with your email
-      //     pass: "johncena3534", // Replace with your email password
-      //   },
-      // });
-
-      // const mailOptions = {
-      //   from: "yahyaaman@hotmail.com", // Replace with your email
-      //   to: email,
-      //   subject: "Your New Password",
-      //   text: `Your new password is: ${newPassword}`,
-      // };
-
-      // transporter.sendMail(mailOptions, (error, info) => {
-      //   if (error) {
-      //     console.error(error);
-      //     return res.status(500).json({ message: "Internal Server Error" });
-      //   } else {
-      //     console.log("Email sent: " + info.response);
-      //     return res
-      //       .status(200)
-      //       .json({ message: "New password sent successfully" });
-      //   }
-      // });
       return res.status(200).json({ message: "Password successfully changed" });
     } else {
       return res

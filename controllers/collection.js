@@ -144,3 +144,64 @@ export const editCollection = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const addItemToCollection = async (req, res) => {
+  try {
+    const { name, itemID, itemImg, itemDate, itemType, collectionID, user } =
+      req.body;
+
+    let existingUser;
+    try {
+      existingUser = await User.findById(user);
+    } catch (error) {
+      console.error("Error finding user:", error);
+      return res.status(500).json({ message: "Server Error" });
+    }
+
+    if (!existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Unable to find user with this ID" });
+    }
+
+    const existingCollection = await Collection.findById(collectionID);
+
+    if (!existingCollection) {
+      return res.status(404).json({
+        message: "Collection not found",
+      });
+    }
+
+    const existingItem = existingCollection.items.find(
+      (item) => item.itemID === itemID && item.itemType === itemType
+    );
+
+    if (existingItem) {
+      return res.status(400).json({
+        message: "Item already exists in the collection",
+      });
+    }
+
+    try {
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      existingCollection.items.push({
+        name,
+        itemID,
+        itemImg,
+        itemDate,
+        itemType,
+      });
+      await existingCollection.save();
+      await session.commitTransaction();
+      return res.status(201).json(existingCollection);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: error });
+    }
+  } catch (error) {
+    console.error("Error adding to collection:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
