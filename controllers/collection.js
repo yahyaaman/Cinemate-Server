@@ -205,3 +205,74 @@ export const addItemToCollection = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const removeItemFromCollection = async (req, res) => {
+  try {
+    const { itemID, itemType, collectionID, user } = req.body;
+
+    let existingUser;
+    try {
+      existingUser = await User.findById(user);
+    } catch (error) {
+      console.error("Error finding user:", error);
+      return res.status(500).json({ message: "Server Error" });
+    }
+
+    if (!existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Unable to find user with this ID" });
+    }
+
+    // Find the collection by ID
+    const existingCollection = await Collection.findById(collectionID);
+
+    // If the collection doesn't exist, return an error
+    if (!existingCollection) {
+      return res.status(404).json({
+        message: "Collection not found",
+      });
+    }
+
+    // Find the index of the item with the given itemID and itemType in the collection
+    const itemIndex = existingCollection.items.findIndex(
+      (item) => item.itemID === itemID && item.itemType === itemType
+    );
+
+    // If the item doesn't exist in the collection, return an error
+    if (itemIndex === -1) {
+      return res.status(404).json({
+        message: "Item not found in the collection",
+      });
+    }
+
+    // Remove the item from the collection's items array
+    existingCollection.items.splice(itemIndex, 1);
+
+    // Save the updated collection
+    await existingCollection.save();
+
+    // Return success response
+    return res.status(200).json({
+      message: "Item removed from collection successfully",
+    });
+  } catch (error) {
+    console.error("Error removing item from collection:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const getUserCollections = async (req, res, next) => {
+  const userID = req.params.id;
+  let userCollections;
+  try {
+    userCollections = await Collection.find({ user: userID });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+  if (!userCollections) {
+    return res.status(404).json({ message: "No collections found" });
+  }
+  return res.status(200).json({ collections: userCollections });
+};
