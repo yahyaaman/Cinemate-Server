@@ -92,7 +92,51 @@ export const createCollection = async (req, res) => {
   }
 };
 
-export const deleteCollection = async (req, res) => {};
+export const deleteCollection = async (req, res) => {
+  try {
+    const collectionID = req.params.id;
+    console.log(req);
+    let existingUser;
+    try {
+      existingUser = await User.findById(req.body.user);
+    } catch (error) {
+      console.error("Error finding user:", error);
+
+      return res.status(500).json({ message: "Server Error" });
+    }
+
+    if (!existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Unable to find user with this ID" });
+    }
+
+    let existingCollection;
+    try {
+      existingCollection = await Collection.findByIdAndRemove(
+        collectionID
+      ).populate("user");
+      await existingCollection.user.collections.pull(existingCollection);
+      await existingCollection.user.save();
+
+      if (existingCollection) {
+        return res
+          .status(200)
+          .json({ message: "Collection Deleted Successfully" });
+      } else {
+        res.status(404).json({
+          message: "Collection not found",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting collection:", error);
+      return res.status(500).json({ message: "Server Error" });
+    }
+  } catch (error) {
+    console.error("Error deleting collection:", error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
 
 export const editCollection = async (req, res) => {
   try {
@@ -118,18 +162,6 @@ export const editCollection = async (req, res) => {
       return res
         .status(400)
         .json({ message: "Unable to find user with this ID" });
-    }
-
-    let existing_Collection;
-    try {
-      existing_Collection = await Collection.findOne({ name });
-    } catch (err) {
-      return console.log(err);
-    }
-    if (existing_Collection) {
-      return res.status(400).json({
-        message: "Collection With This Name Already Exists",
-      });
     }
 
     const updatedCollection = await Collection.findByIdAndUpdate(CollectionID, {
