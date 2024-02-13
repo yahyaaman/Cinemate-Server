@@ -394,7 +394,7 @@ export const generateResetToken = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "hotmail",
       host: "smtp-mail.outlook.com",
-      secure: true,
+      secure: false,
       port: 587,
       auth: {
         user: "yahyaaman@hotmail.com",
