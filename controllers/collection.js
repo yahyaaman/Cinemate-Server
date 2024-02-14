@@ -56,17 +56,19 @@ export const createCollection = async (req, res) => {
         .json({ message: "Unable to find user with this ID" });
     }
 
-    let existingCollection;
-    try {
-      existingCollection = await Collection.findOne({ name });
-    } catch (err) {
-      return console.log(err);
-    }
-    if (existingCollection) {
-      return res.status(400).json({
-        message: "Collection Already Exists",
-      });
-    }
+    // let existingCollection;
+    // try {
+    //   existingCollection = await Collection.findOne({ name });
+    // } catch (err) {
+    //   return console.log(err);
+    // }
+    // console.log("Collection ka user", existingCollection.user);
+    // console.log("current user", user);
+    // if (existingCollection && existingCollection.user === user) {
+    //   return res.status(400).json({
+    //     message: "Collection Already Exists",
+    //   });
+    // }
 
     const newCollection = new Collection({
       name,
