@@ -398,7 +398,7 @@ export const generateResetToken = async (req, res) => {
       port: 587,
       auth: {
         user: "yahyaaman@hotmail.com",
-        pass: "johncena3534",
+        pass: "*****",
       },
     });
 
